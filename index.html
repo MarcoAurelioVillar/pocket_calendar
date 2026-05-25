@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cápsula // 2026 — Rotation Grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#05060c;
+    --bg-2:#0a0d1a;
+    --surface:#0e1224;
+    --surface-2:#141a30;
+    --line:#1d2542;
+    --line-2:#2a3358;
+    --ink:#e7ecff;
+    --ink-dim:#8a93b8;
+    --ink-faint:#525a7d;
+    --cyan:#3df3ff;
+    --cyan-glow:rgba(61,243,255,.35);
+    --magenta:#ff3df0;
+    --amber:#ffb547;
+    --lime:#a8ff60;
+    --rose:#ff6b9b;
+    --violet:#9d7bff;
+    --danger:#ff4d6d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(900px 600px at 12% -10%, rgba(61,243,255,.10), transparent 60%),
+      radial-gradient(900px 700px at 110% 10%, rgba(255,61,240,.08), transparent 60%),
+      radial-gradient(1200px 800px at 50% 110%, rgba(157,123,255,.06), transparent 60%),
+      linear-gradient(180deg, #05060c 0%, #060814 100%);
+    overflow-x:hidden;
+  }
+  /* Grid background overlay */
+  body::before{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(rgba(61,243,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,243,255,.04) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+  /* Scanlines */
+  body::after{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+  .wrap{position:relative;z-index:2;max-width:1500px;margin:0 auto;padding:28px 32px 80px;}
+
+  /* ============ TOP BAR ============ */
+  .topbar{
+    display:flex;align-items:center;gap:18px;
+    padding:12px 18px;border:1px solid var(--line);border-radius:6px;
+    background:linear-gradient(180deg, rgba(20,26,48,.6), rgba(10,13,26,.6));
+    backdrop-filter:blur(8px);
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan-glow);animation:pulse 1.6s infinite ease-in-out;}
+  .topbar .sep{color:var(--ink-faint);}
+  .topbar .grow{flex:1;}
+  .topbar .stat{display:inline-flex;align-items:center;gap:8px;}
+  .topbar .stat b{color:var(--cyan);font-weight:500;letter-spacing:.18em;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.85);}}
+
+  /* ============ HERO ============ */
+  .hero{
+    margin-top:24px;
+    display:grid;grid-template-columns:1.4fr 1fr;gap:24px;
+  }
+  .hero-left{
+    position:relative;
+    padding:36px 36px 32px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:
+      radial-gradient(600px 300px at 0% 0%, rgba(61,243,255,.10), transparent 60%),
+      linear-gradient(180deg, rgba(14,18,36,.85), rgba(14,18,36,.55));
+    overflow:hidden;
+  }
+  .hero-left::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(135deg, transparent 60%, rgba(61,243,255,.06) 100%);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--cyan);
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow .bar{height:1px;width:64px;background:linear-gradient(90deg,var(--cyan),transparent);}
+  h1.title{
+    font-family:'Orbitron',sans-serif;font-weight:900;
+    font-size:clamp(64px,9vw,128px);line-height:.9;letter-spacing:-.02em;
+    margin:18px 0 6px;color:var(--ink);
+    background:linear-gradient(180deg, #ffffff 0%, #b8c4ff 60%, #6a78b0 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:0 0 60px rgba(61,243,255,.18);
+  }
+  h1.title span.year{
+    display:block;
+    font-size:clamp(64px,9vw,128px);
+    background:linear-gradient(90deg, var(--cyan) 0%, var(--magenta) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    letter-spacing:.04em;
+  }
+  .sub{color:var(--ink-dim);max-width:520px;font-size:15px;line-height:1.6;margin-top:14px;}
+  .sub b{color:var(--ink);font-weight:500;}
+  .meta-row{
+    margin-top:28px;display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);padding-top:20px;
+  }
+  .meta{flex:1;min-width:120px;padding:4px 16px;border-right:1px solid var(--line);}
+  .meta:last-child{border-right:none;}
+  .meta .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase;}
+  .meta .v{font-family:'Orbitron',sans-serif;font-weight:700;font-size:28px;color:var(--ink);margin-top:4px;}
+  .meta .v small{color:var(--ink-faint);font-weight:400;font-size:12px;font-family:'JetBrains Mono',monospace;}
+
+  /* ============ HERO RIGHT — NOW / NEXT ============ */
+  .hero-right{display:grid;grid-template-rows:auto 1fr auto;gap:14px;}
+  .card{
+    border:1px solid var(--line);border-radius:10px;
+    background:linear-gradient(180deg, rgba(20,26,48,.7), rgba(10,13,26,.5));
+    padding:18px 20px;position:relative;overflow:hidden;
+  }
+  .card .corner{
+    position:absolute;width:14px;height:14px;border:1px solid var(--cyan);opacity:.6;
+  }
+  .card .corner.tl{top:8px;left:8px;border-right:none;border-bottom:none;}
+  .card .corner.tr{top:8px;right:8px;border-left:none;border-bottom:none;}
+  .card .corner.bl{bottom:8px;left:8px;border-right:none;border-top:none;}
+  .card .corner.br{bottom:8px;right:8px;border-left:none;border-top:none;}
+
+  .card-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-faint);}
+  .card-now{
+    background:
+      radial-gradient(400px 200px at 100% 0%, rgba(61,243,255,.18), transparent 60%),
+      linear-gradient(180deg, rgba(20,26,48,.85), rgba(10,13,26,.7));
+    border-color:var(--cyan);
+  }
+  .card-now .card-label{color:var(--cyan);}
+  .card-now .name{font-family:'Orbitron',sans-serif;font-weight:700;font-size:32px;line-height:1.05;margin-top:10px;color:var(--ink);}
+  .card-now .when{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim);margin-top:8px;letter-spacing:.12em;}
+  .card-now .when b{color:var(--cyan);font-weight:500;}
+
+  .card-next .name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;color:var(--ink);margin-top:8px;}
+  .card-next .when{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);margin-top:4px;letter-spacing:.12em;}
+  .card-next .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);}
+  .card-next .row:last-child{border-bottom:none;}
+  .card-next .row .l{display:flex;flex-direction:column;}
+  .card-next .row .d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:.08em;}
+
+  /* ============ CONTROLS ============ */
+  .controls{
+    margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+    padding:12px 14px;border:1px solid var(--line);border-radius:8px;
+    background:rgba(14,18,36,.5);backdrop-filter:blur(8px);
+  }
+  .search{
+    flex:1;min-width:240px;display:flex;align-items:center;gap:10px;
+    padding:10px 14px;background:rgba(5,6,12,.6);border:1px solid var(--line);border-radius:6px;
+  }
+  .search svg{flex-shrink:0;}
+  .search input{
+    flex:1;background:transparent;border:none;outline:none;color:var(--ink);
+    font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.04em;
+  }
+  .search input::placeholder{color:var(--ink-faint);}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .seg button{
+    background:transparent;border:none;color:var(--ink-dim);cursor:pointer;
+    padding:9px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    border-right:1px solid var(--line);transition:all .15s;
+  }
+  .seg button:last-child{border-right:none;}
+  .seg button:hover{color:var(--ink);background:rgba(61,243,255,.04);}
+  .seg button.active{color:var(--bg);background:var(--cyan);}
+
+  /* ============ MONTH GRID ============ */
+  .months{
+    margin-top:24px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  }
+  .month{
+    border:1px solid var(--line);border-radius:10px;
+    background:linear-gradient(180deg, rgba(20,26,48,.55), rgba(10,13,26,.35));
+    padding:18px 18px 20px;position:relative;overflow:hidden;
+    transition:border-color .2s, transform .2s;
+  }
+  .month:hover{border-color:var(--line-2);}
+  .month-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+  .month-name{font-family:'Orbitron',sans-serif;font-weight:700;font-size:22px;letter-spacing:.04em;color:var(--ink);}
+  .month-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--ink-faint);}
+  .month-days{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+  }
+  .dow{
+    font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;
+    color:var(--ink-faint);text-align:center;padding:4px 0;text-transform:uppercase;
+  }
+  .day{
+    aspect-ratio:1;border-radius:4px;
+    background:rgba(5,6,12,.5);border:1px solid transparent;
+    display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;
+    padding:4px 5px;cursor:pointer;position:relative;
+    transition:all .15s;
+  }
+  .day.empty{background:transparent;cursor:default;}
+  .day:not(.empty):hover{border-color:var(--cyan);transform:translateY(-1px);}
+  .day.active{outline:1px solid var(--cyan);outline-offset:0;box-shadow:0 0 0 1px var(--cyan), 0 0 16px var(--cyan-glow);}
+  .day .num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);line-height:1;}
+  .day .swatch{
+    flex:1;margin-top:3px;border-radius:2px;
+    background:var(--c, var(--ink-dim));
+    opacity:.65;
+  }
+  .day:hover .swatch{opacity:1;}
+  .day.dim .swatch{opacity:.15;}
+
+  /* ============ DETAIL PANEL ============ */
+  .detail{
+    position:fixed;bottom:24px;right:24px;width:340px;z-index:50;
+    border:1px solid var(--cyan);border-radius:10px;
+    background:linear-gradient(180deg, rgba(20,26,48,.95), rgba(5,6,12,.95));
+    padding:18px 20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 40px rgba(61,243,255,.15);
+    backdrop-filter:blur(20px);
+    transform:translateY(20px);opacity:0;pointer-events:none;
+    transition:transform .25s, opacity .25s;
+  }
+  .detail.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+  .detail .close{
+    position:absolute;top:10px;right:12px;width:24px;height:24px;border-radius:4px;
+    background:transparent;border:1px solid var(--line);color:var(--ink-dim);
+    cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;
+  }
+  .detail .close:hover{color:var(--ink);border-color:var(--cyan);}
+  .detail-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.28em;color:var(--cyan);text-transform:uppercase;}
+  .detail-name{font-family:'Orbitron',sans-serif;font-weight:700;font-size:24px;color:var(--ink);margin-top:8px;line-height:1.1;}
+  .detail-date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-dim);margin-top:6px;letter-spacing:.1em;}
+  .detail-swatch{height:6px;border-radius:3px;margin-top:14px;background:var(--c);}
+  .detail-meta{margin-top:14px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);}
+  .detail-meta b{color:var(--ink);font-weight:500;}
+
+  /* ============ REGISTRY ============ */
+  .section-head{
+    margin:48px 0 18px;
+    display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    border-bottom:1px solid var(--line);padding-bottom:14px;
+  }
+  .section-head h2{
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:22px;letter-spacing:.06em;
+    color:var(--ink);margin:0;text-transform:uppercase;
+    display:flex;align-items:center;gap:14px;
+  }
+  .section-head h2::before{
+    content:"";display:inline-block;width:8px;height:8px;background:var(--cyan);
+    box-shadow:0 0 12px var(--cyan-glow);transform:rotate(45deg);
+  }
+  .section-head .count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint);letter-spacing:.18em;text-transform:uppercase;}
+
+  .registry{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  }
+  .entity{
+    border:1px solid var(--line);border-radius:8px;
+    background:rgba(14,18,36,.5);
+    padding:14px 16px;cursor:pointer;
+    transition:all .15s;
+    position:relative;overflow:hidden;
+  }
+  .entity:hover{border-color:var(--c);transform:translateY(-2px);}
+  .entity::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);
+  }
+  .entity .row1{display:flex;justify-content:space-between;align-items:baseline;}
+  .entity .id{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);letter-spacing:.2em;}
+  .entity .count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--c);letter-spacing:.08em;}
+  .entity .name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-top:6px;line-height:1.2;}
+  .entity .dates{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);margin-top:8px;letter-spacing:.06em;line-height:1.5;}
+
+  /* ============ FREQUENCY ============ */
+  .freq{
+    border:1px solid var(--line);border-radius:10px;
+    background:linear-gradient(180deg, rgba(20,26,48,.4), rgba(10,13,26,.3));
+    padding:24px 26px;
+  }
+  .freq-rows{display:flex;flex-direction:column;gap:8px;}
+  .freq-row{display:grid;grid-template-columns:180px 1fr 40px;gap:14px;align-items:center;}
+  .freq-row .n{font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--ink);font-weight:500;}
+  .freq-row .bar-wrap{height:14px;background:rgba(5,6,12,.6);border-radius:2px;overflow:hidden;position:relative;}
+  .freq-row .bar{
+    height:100%;background:linear-gradient(90deg, var(--c), color-mix(in oklab, var(--c) 50%, white 0%));
+    box-shadow:0 0 12px var(--c);
+    transform-origin:left;animation:grow .8s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes grow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  .freq-row .v{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);text-align:right;}
+
+  /* ============ FOOTER ============ */
+  footer{
+    margin-top:60px;padding:24px 0;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase;
+  }
+  footer .right{display:flex;gap:18px;}
+
+  /* ============ FILTER HIGHLIGHT ============ */
+  body.has-filter .day:not(.match) .swatch{opacity:.1;}
+  body.has-filter .day:not(.match){border-color:transparent;}
+  body.has-filter .day.match .swatch{opacity:1;box-shadow:0 0 12px var(--c);}
+  body.has-filter .entity:not(.match){opacity:.25;}
+
+  /* responsive */
+  @media (max-width:1100px){
+    .hero{grid-template-columns:1fr;}
+    .months{grid-template-columns:repeat(2,1fr);}
+    .registry{grid-template-columns:repeat(3,1fr);}
+  }
+  @media (max-width:720px){
+    .wrap{padding:16px;}
+    .months{grid-template-columns:1fr;}
+    .registry{grid-template-columns:repeat(2,1fr);}
+    .freq-row{grid-template-columns:130px 1fr 36px;}
+    .detail{right:12px;left:12px;width:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <span class="dot"></span>
+    <span>SYS://CAPSULA·CORE</span>
+    <span class="sep">/</span>
+    <span>ROTATION_PROTOCOL · 2026</span>
+    <span class="grow"></span>
+    <span class="stat">REC <b id="topRec">365</b></span>
+    <span class="sep">·</span>
+    <span class="stat">ENT <b id="topEnt">56</b></span>
+    <span class="sep">·</span>
+    <span class="stat">CYC <b>12</b></span>
+    <span class="sep">·</span>
+    <span class="stat" id="clock">--:--:--</span>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="eyebrow"><span class="bar"></span> ANNUAL ROTATION GRID · v.2026.1</div>
+      <h1 class="title">CÁPSULA<span class="year">2026</span></h1>
+      <p class="sub">Cronograma anual de rotação de <b>365 registros</b> distribuídos entre <b>56 entidades</b> únicas. Cada cápsula ocupa uma janela diária. Pesquise, filtre por entidade ou inspecione qualquer data para acessar o registro.</p>
+      <div class="meta-row">
+        <div class="meta"><div class="k">Records</div><div class="v">365<small> · dias</small></div></div>
+        <div class="meta"><div class="k">Entities</div><div class="v">56<small> · únicas</small></div></div>
+        <div class="meta"><div class="k">Cycles</div><div class="v">12<small> · meses</small></div></div>
+        <div class="meta"><div class="k">Start</div><div class="v">01.01<small> · 2026</small></div></div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="card card-now">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="card-label">// CÁPSULA ATIVA</div>
+        <div class="name" id="nowName">—</div>
+        <div class="when">SIGNAL <b id="nowDate">--/--/2026</b> · DIA <b id="nowDay">--/365</b></div>
+      </div>
+
+      <div class="card card-next">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="card-label">// PRÓXIMAS NA FILA</div>
+        <div id="nextList" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3df3ff" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="Pesquisar entidade..." autocomplete="off"/>
+    </div>
+    <div class="seg" id="monthFilter">
+      <button data-m="all" class="active">TODOS</button>
+      <button data-m="q1">Q1</button>
+      <button data-m="q2">Q2</button>
+      <button data-m="q3">Q3</button>
+      <button data-m="q4">Q4</button>
+    </div>
+  </div>
+
+  <!-- MONTH GRID -->
+  <section class="months" id="months"></section>
+
+  <!-- ENTITY REGISTRY -->
+  <div class="section-head">
+    <h2>ENTITY REGISTRY</h2>
+    <span class="count" id="regCount">56 IDs</span>
+  </div>
+  <section class="registry" id="registry"></section>
+
+  <!-- FREQUENCY -->
+  <div class="section-head">
+    <h2>FREQUENCY · SPECTRUM</h2>
+    <span class="count">aparições / 365 dias</span>
+  </div>
+  <section class="freq">
+    <div class="freq-rows" id="freqRows"></div>
+  </section>
+
+  <footer>
+    <div>CAPSULA//2026 · ROTATION_PROTOCOL · INTERNAL_DATA_VIEW</div>
+    <div class="right">
+      <span>BUILD 2026.01</span>
+      <span>STREAM // STABLE</span>
+      <span>END_OF_FEED</span>
+    </div>
+  </footer>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail" id="detail">
+  <button class="close" id="detailClose">×</button>
+  <div class="detail-label">// CÁPSULA REGISTRO</div>
+  <div class="detail-name" id="detailName">—</div>
+  <div class="detail-date" id="detailDate">--/--/2026</div>
+  <div class="detail-swatch" id="detailSwatch"></div>
+  <div class="detail-meta">
+    <div>DIA <b id="detailDay">--</b>/365</div>
+    <div>OCORR <b id="detailOcc">--</b></div>
+    <div>CICLO <b id="detailCycle">--</b></div>
+  </div>
+</div>
+
+<script>
+// =================== DATA ===================
+const RAW = `Dark Lugia 01/01/2026
+Lunala 02/01/2026
+Mewtwo 03/01/2026
+Volcanion 04/01/2026
+Jirachi 05/01/2026
+Meltan 06/01/2026
+Cresselia 07/01/2026
+Kubfu 08/01/2026
+Deoxys 09/01/2026
+Ho-Oh 10/01/2026
+Diancie 11/01/2026
+Greninja tipo osso 12/01/2026
+Void mine 13/01/2026
+Thundurus 14/01/2026
+SoulHeart 15/01/2026
+Genesect 16/01/2026
+Groudon 17/01/2026
+Darkrai 18/01/2026
+Zeraora 19/01/2026
+Mewtwo Blindado 20/01/2026
+Kyogre 21/01/2026
+Mestre das Ilusões 22/01/2026
+Tapu Koko 23/01/2026
+Tapu Lele 24/01/2026
+Regigigas 25/01/2026
+Latios 26/01/2026
+Demônio da Terra 27/01/2026
+Celebi 28/01/2026
+Demônio do Oceano 29/01/2026
+Tapu Fini 30/01/2026
+Zygard 31/01/2026
+Latias 01/02/2026
+Keldeo 02/02/2026
+Aerodactyl Osso 03/02/2026
+Buzzwole 04/02/2026
+Onix Cristal 05/02/2026
+Tornadus 06/02/2026
+Stakataka 07/02/2026
+Heatran 08/02/2026
+Marshadow 09/02/2026
+Arceus Creator 10/02/2026
+Magerna 11/02/2026
+Entei Feitiço Unow 12/02/2026
+Yveltal 13/02/2026
+Zorua 14/02/2026
+Lugia 15/02/2026
+Solgaleo 16/02/2026
+Kartana 17/02/2026
+Xurketree 18/02/2026
+Blacephalon 19/02/2026
+Dialga 20/02/2026
+Palkia 21/02/2026
+Xerneas 22/02/2026
+Victini 23/02/2026
+Mewtwo Sombrio 24/02/2026
+Raikou 25/02/2026
+Dark Lugia 26/02/2026
+Lunala 27/02/2026
+Mewtwo 28/02/2026
+Volcanion 01/03/2026
+Jirachi 02/03/2026
+Meltan 03/03/2026
+Cresselia 04/03/2026
+Kubfu 05/03/2026
+Deoxys 06/03/2026
+Ho-Oh 07/03/2026
+Diancie 08/03/2026
+Greninja tipo osso 09/03/2026
+Void mine 10/03/2026
+Thundurus 11/03/2026
+SoulHeart 12/03/2026
+Genesect 13/03/2026
+Groudon 14/03/2026
+Darkrai 15/03/2026
+Zeraora 16/03/2026
+Mewtwo Blindado 17/03/2026
+Kyogre 18/03/2026
+Mestre das Ilusões 19/03/2026
+Tapu Koko 20/03/2026
+Tapu Lele 21/03/2026
+Regigigas 22/03/2026
+Latios 23/03/2026
+Demônio da Terra 24/03/2026
+Celebi 25/03/2026
+Demônio do Oceano 26/03/2026
+Tapu Fini 27/03/2026
+Zygard 28/03/2026
+Latias 29/03/2026
+Keldeo 30/03/2026
+Aerodactyl Osso 31/03/2026
+Buzzwole 01/04/2026
+Onix Cristal 02/04/2026
+Tornadus 03/04/2026
+Stakataka 04/04/2026
+Heatran 05/04/2026
+Marshadow 06/04/2026
+Arceus Creator 07/04/2026
+Magerna 08/04/2026
+Entei Feitiço Unow 09/04/2026
+Yveltal 10/04/2026
+Zorua 11/04/2026
+Lugia 12/04/2026
+Solgaleo 13/04/2026
+Kartana 14/04/2026
+Xurketree 15/04/2026
+Blacephalon 16/04/2026
+Dialga 17/04/2026
+Palkia 18/04/2026
+Xerneas 19/04/2026
+Victini 20/04/2026
+Mewtwo Sombrio 21/04/2026
+Raikou 22/04/2026
+Dark Lugia 23/04/2026
+Lunala 24/04/2026
+Mewtwo 25/04/2026
+Volcanion 26/04/2026
+Jirachi 27/04/2026
+Meltan 28/04/2026
+Cresselia 29/04/2026
+Kubfu 30/04/2026
+Deoxys 01/05/2026
+Ho-Oh 02/05/2026
+Diancie 03/05/2026
+Greninja tipo osso 04/05/2026
+Void mine 05/05/2026
+Thundurus 06/05/2026
+SoulHeart 07/05/2026
+Genesect 08/05/2026
+Groudon 09/05/2026
+Darkrai 10/05/2026
+Zeraora 11/05/2026
+Mewtwo Blindado 12/05/2026
+Kyogre 13/05/2026
+Mestre das Ilusões 14/05/2026
+Tapu Koko 15/05/2026
+Tapu Lele 16/05/2026
+Regigigas 17/05/2026
+Latios 18/05/2026
+Demônio da Terra 19/05/2026
+Celebi 20/05/2026
+Demônio do Oceano 21/05/2026
+Tapu Fini 22/05/2026
+Zygard 23/05/2026
+Latias 24/05/2026
+Keldeo 25/05/2026
+Aerodactyl Osso 26/05/2026
+Buzzwole 27/05/2026
+Onix Cristal 28/05/2026
+Tornadus 29/05/2026
+Stakataka 30/05/2026
+Heatran 31/05/2026
+Marshadow 01/06/2026
+Arceus Creator 02/06/2026
+Magerna 03/06/2026
+Entei Feitiço Unow 04/06/2026
+Yveltal 05/06/2026
+Zorua 06/06/2026
+Lugia 07/06/2026
+Solgaleo 08/06/2026
+Kartana 09/06/2026
+Xurketree 10/06/2026
+Blacephalon 11/06/2026
+Dialga 12/06/2026
+Palkia 13/06/2026
+Xerneas 14/06/2026
+Victini 15/06/2026
+Mewtwo Sombrio 16/06/2026
+Raikou 17/06/2026
+Dark Lugia 18/06/2026
+Lunala 19/06/2026
+Mewtwo 20/06/2026
+Volcanion 21/06/2026
+Jirachi 22/06/2026
+Meltan 23/06/2026
+Cresselia 24/06/2026
+Kubfu 25/06/2026
+Deoxys 26/06/2026
+Ho-Oh 27/06/2026
+Diancie 28/06/2026
+Greninja tipo osso 29/06/2026
+Void mine 30/06/2026
+Thundurus 01/07/2026
+SoulHeart 02/07/2026
+Genesect 03/07/2026
+Groudon 04/07/2026
+Darkrai 05/07/2026
+Zeraora 06/07/2026
+Mewtwo Blindado 07/07/2026
+Kyogre 08/07/2026
+Mestre das Ilusões 09/07/2026
+Tapu Koko 10/07/2026
+Tapu Lele 11/07/2026
+Regigigas 12/07/2026
+Latios 13/07/2026
+Demônio da Terra 14/07/2026
+Celebi 15/07/2026
+Demônio do Oceano 16/07/2026
+Tapu Fini 17/07/2026
+Zygard 18/07/2026
+Latias 19/07/2026
+Keldeo 20/07/2026
+Aerodactyl Osso 21/07/2026
+Buzzwole 22/07/2026
+Onix Cristal 23/07/2026
+Tornadus 24/07/2026
+Stakataka 25/07/2026
+Heatran 26/07/2026
+Marshadow 27/07/2026
+Arceus Creator 28/07/2026
+Magerna 29/07/2026
+Entei Feitiço Unow 30/07/2026
+Yveltal 31/07/2026
+Zorua 01/08/2026
+Lugia 02/08/2026
+Solgaleo 03/08/2026
+Kartana 04/08/2026
+Xurketree 05/08/2026
+Blacephalon 06/08/2026
+Dialga 07/08/2026
+Palkia 08/08/2026
+Xerneas 09/08/2026
+Victini 10/08/2026
+Mewtwo Sombrio 11/08/2026
+Raikou 12/08/2026
+Dark Lugia 13/08/2026
+Lunala 14/08/2026
+Mewtwo 15/08/2026
+Volcanion 16/08/2026
+Jirachi 17/08/2026
+Meltan 18/08/2026
+Cresselia 19/08/2026
+Kubfu 20/08/2026
+Deoxys 21/08/2026
+Ho-Oh 22/08/2026
+Diancie 23/08/2026
+Greninja tipo osso 24/08/2026
+Void mine 25/08/2026
+Thundurus 26/08/2026
+SoulHeart 27/08/2026
+Genesect 28/08/2026
+Groudon 29/08/2026
+Darkrai 30/08/2026
+Zeraora 31/08/2026
+Mewtwo Blindado 01/09/2026
+Kyogre 02/09/2026
+Mestre das Ilusões 03/09/2026
+Tapu Koko 04/09/2026
+Tapu Lele 05/09/2026
+Regigigas 06/09/2026
+Latios 07/09/2026
+Demônio da Terra 08/09/2026
+Celebi 09/09/2026
+Demônio do Oceano 10/09/2026
+Tapu Fini 11/09/2026
+Zygard 12/09/2026
+Latias 13/09/2026
+Keldeo 14/09/2026
+Aerodactyl Osso 15/09/2026
+Buzzwole 16/09/2026
+Onix Cristal 17/09/2026
+Tornadus 18/09/2026
+Stakataka 19/09/2026
+Heatran 20/09/2026
+Marshadow 21/09/2026
+Arceus Creator 22/09/2026
+Magerna 23/09/2026
+Entei Feitiço Unow 24/09/2026
+Yveltal 25/09/2026
+Zorua 26/09/2026
+Lugia 27/09/2026
+Solgaleo 28/09/2026
+Kartana 29/09/2026
+Xurketree 30/09/2026
+Blacephalon 01/10/2026
+Dialga 02/10/2026
+Palkia 03/10/2026
+Xerneas 04/10/2026
+Victini 05/10/2026
+Mewtwo Sombrio 06/10/2026
+Raikou 07/10/2026
+Dark Lugia 08/10/2026
+Lunala 09/10/2026
+Mewtwo 10/10/2026
+Volcanion 11/10/2026
+Jirachi 12/10/2026
+Meltan 13/10/2026
+Cresselia 14/10/2026
+Kubfu 15/10/2026
+Deoxys 16/10/2026
+Ho-Oh 17/10/2026
+Diancie 18/10/2026
+Greninja tipo osso 19/10/2026
+Void mine 20/10/2026
+Thundurus 21/10/2026
+SoulHeart 22/10/2026
+Genesect 23/10/2026
+Groudon 24/10/2026
+Darkrai 25/10/2026
+Zeraora 26/10/2026
+Mewtwo Blindado 27/10/2026
+Kyogre 28/10/2026
+Mestre das Ilusões 29/10/2026
+Tapu Koko 30/10/2026
+Tapu Lele 31/10/2026
+Regigigas 01/11/2026
+Latios 02/11/2026
+Demônio da Terra 03/11/2026
+Celebi 04/11/2026
+Demônio do Oceano 05/11/2026
+Tapu Fini 06/11/2026
+Zygard 07/11/2026
+Latias 08/11/2026
+Keldeo 09/11/2026
+Aerodactyl Osso 10/11/2026
+Buzzwole 11/11/2026
+Onix Cristal 12/11/2026
+Tornadus 13/11/2026
+Stakataka 14/11/2026
+Heatran 15/11/2026
+Marshadow 16/11/2026
+Arceus Creator 17/11/2026
+Magerna 18/11/2026
+Entei Feitiço Unow 19/11/2026
+Yveltal 20/11/2026
+Zorua 21/11/2026
+Lugia 22/11/2026
+Solgaleo 23/11/2026
+Kartana 24/11/2026
+Xurketree 25/11/2026
+Blacephalon 26/11/2026
+Dialga 27/11/2026
+Palkia 28/11/2026
+Xerneas 29/11/2026
+Victini 30/11/2026
+Raikou 01/12/2026
+Dark Lugia 02/12/2026
+Lunala 03/12/2026
+Mewtwo 04/12/2026
+Volcanion 05/12/2026
+Jirachi 06/12/2026
+Meltan 07/12/2026
+Cresselia 08/12/2026
+Kubfu 09/12/2026
+Deoxys 10/12/2026
+Ho-Oh 11/12/2026
+Diancie 12/12/2026
+Greninja tipo osso 13/12/2026
+Void mine 14/12/2026
+Thundurus 15/12/2026
+SoulHeart 16/12/2026
+Genesect 17/12/2026
+Groudon 18/12/2026
+Darkrai 19/12/2026
+Zeraora 20/12/2026
+Mewtwo Blindado 21/12/2026
+Kyogre 22/12/2026
+Mestre das Ilusões 23/12/2026
+Tapu Koko 24/12/2026
+Tapu Lele 25/12/2026
+Regigigas 26/12/2026
+Latios 27/12/2026
+Demônio da Terra 28/12/2026
+Celebi 29/12/2026
+Demônio do Oceano 30/12/2026
+Tapu Fini 31/12/2026`;
+
+const ENTRIES = RAW.split('\n').map((l,i) => {
+  const m = l.match(/^(.+) (\d{2})\/(\d{2})\/(\d{4})$/);
+  return { name:m[1].trim(), day:+m[2], month:+m[3], year:+m[4], dayOfYear:i+1 };
+});
+
+// Deterministic palette per entity
+const PALETTE = [
+  '#3df3ff','#ff3df0','#ffb547','#a8ff60','#ff6b9b','#9d7bff',
+  '#7bd1ff','#ffa07a','#c5ff5b','#ff5b5b','#5bffd1','#ffd45b',
+  '#b15bff','#5bb6ff','#ff7eb9','#7eff97','#ffc8a0','#a0c8ff',
+];
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+const NAMES = [...new Set(ENTRIES.map(e=>e.name))];
+const COLOR = {};
+NAMES.forEach(n=>{ COLOR[n] = PALETTE[hash(n) % PALETTE.length]; });
+
+// Occurrence counts
+const COUNT = {};
+ENTRIES.forEach(e=>{ COUNT[e.name] = (COUNT[e.name]||0)+1; });
+
+// =================== HERO: NOW + NEXT ===================
+function setNow(idx){
+  const e = ENTRIES[idx];
+  document.getElementById('nowName').textContent = e.name;
+  document.getElementById('nowName').style.color = COLOR[e.name];
+  document.getElementById('nowName').style.textShadow = '0 0 30px ' + COLOR[e.name] + '88';
+  document.getElementById('nowDate').textContent = String(e.day).padStart(2,'0')+'/'+String(e.month).padStart(2,'0')+'/2026';
+  document.getElementById('nowDay').textContent = e.dayOfYear+'/365';
+
+  // Next list = next 4 entries
+  const next = [];
+  for(let i=1;i<=4;i++){
+    const n = ENTRIES[(idx+i) % ENTRIES.length];
+    next.push(n);
+  }
+  document.getElementById('nextList').innerHTML = next.map(n=>`
+    <div class="row">
+      <div class="l">
+        <div class="name" style="color:${COLOR[n.name]}">${n.name}</div>
+        <div class="when">CICLO ${String(n.month).padStart(2,'0')} · DIA ${n.dayOfYear}</div>
+      </div>
+      <div class="d">${String(n.day).padStart(2,'0')}/${String(n.month).padStart(2,'0')}</div>
+    </div>
+  `).join('');
+}
+
+// Pick "now" based on today's date if in 2026, else day 1
+(function(){
+  const today = new Date();
+  let idx = 0;
+  if(today.getFullYear() === 2026){
+    const start = new Date(2026,0,1);
+    const diff = Math.floor((today - start) / 86400000);
+    if(diff >= 0 && diff < 365) idx = diff;
+  }
+  setNow(idx);
+})();
+
+// =================== MONTH GRID ===================
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS_IN = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+function buildMonths(){
+  const root = document.getElementById('months');
+  for(let m=1;m<=12;m++){
+    const wrap = document.createElement('div');
+    wrap.className = 'month';
+    wrap.dataset.month = m;
+    const monthEntries = ENTRIES.filter(e=>e.month===m);
+    // First weekday of month in 2026
+    const firstWd = new Date(2026, m-1, 1).getDay(); // 0=Sun
+    // We display Mon-first: shift so Mon=0
+    const shift = (firstWd + 6) % 7;
+
+    let daysHtml = '';
+    const dows = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+    daysHtml += dows.map(d=>`<div class="dow">${d}</div>`).join('');
+    for(let i=0;i<shift;i++) daysHtml += `<div class="day empty"></div>`;
+    for(let d=1;d<=DAYS_IN[m-1];d++){
+      const entry = monthEntries.find(e=>e.day===d);
+      if(!entry){ daysHtml += `<div class="day empty"></div>`; continue; }
+      const c = COLOR[entry.name];
+      daysHtml += `<div class="day" data-doy="${entry.dayOfYear}" data-name="${entry.name}" style="--c:${c}">
+        <div class="num">${String(d).padStart(2,'0')}</div>
+        <div class="swatch"></div>
+      </div>`;
+    }
+    wrap.innerHTML = `
+      <div class="month-head">
+        <div class="month-name">${MONTH_NAMES[m-1]}</div>
+        <div class="month-num">M${String(m).padStart(2,'0')} · ${monthEntries.length} REC</div>
+      </div>
+      <div class="month-days">${daysHtml}</div>
+    `;
+    root.appendChild(wrap);
+  }
+  // Click → detail
+  root.addEventListener('click', e=>{
+    const d = e.target.closest('.day:not(.empty)');
+    if(!d) return;
+    showDetail(+d.dataset.doy);
+    document.querySelectorAll('.day.active').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active');
+  });
+}
+buildMonths();
+
+// =================== REGISTRY ===================
+function buildRegistry(){
+  const root = document.getElementById('registry');
+  // Sort alphabetically
+  const sorted = [...NAMES].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  sorted.forEach((n,i)=>{
+    const dates = ENTRIES.filter(e=>e.name===n).map(e=>String(e.day).padStart(2,'0')+'/'+String(e.month).padStart(2,'0'));
+    const el = document.createElement('div');
+    el.className = 'entity';
+    el.dataset.name = n;
+    el.style.setProperty('--c', COLOR[n]);
+    el.innerHTML = `
+      <div class="row1">
+        <span class="id">E·${String(i+1).padStart(3,'0')}</span>
+        <span class="count">×${COUNT[n]}</span>
+      </div>
+      <div class="name">${n}</div>
+      <div class="dates">${dates.join(' · ')}</div>
+    `;
+    el.addEventListener('click', ()=>{
+      document.getElementById('searchInput').value = n;
+      applyFilter(n);
+    });
+    root.appendChild(el);
+  });
+}
+buildRegistry();
+
+// =================== FREQUENCY ===================
+function buildFreq(){
+  const root = document.getElementById('freqRows');
+  const sorted = [...NAMES].sort((a,b)=>COUNT[b]-COUNT[a]);
+  const max = Math.max(...sorted.map(n=>COUNT[n]));
+  sorted.forEach(n=>{
+    const row = document.createElement('div');
+    row.className = 'freq-row';
+    row.style.setProperty('--c', COLOR[n]);
+    const pct = (COUNT[n] / max * 100).toFixed(1);
+    row.innerHTML = `
+      <div class="n">${n}</div>
+      <div class="bar-wrap"><div class="bar" style="width:${pct}%;animation-delay:${Math.random()*.3}s"></div></div>
+      <div class="v">${COUNT[n]}</div>
+    `;
+    root.appendChild(row);
+  });
+}
+buildFreq();
+
+// =================== DETAIL ===================
+function showDetail(doy){
+  const e = ENTRIES[doy-1];
+  if(!e) return;
+  document.getElementById('detailName').textContent = e.name;
+  document.getElementById('detailName').style.color = COLOR[e.name];
+  document.getElementById('detailDate').textContent = String(e.day).padStart(2,'0')+'/'+String(e.month).padStart(2,'0')+'/2026 · ' + MONTH_NAMES[e.month-1];
+  document.getElementById('detailDay').textContent = e.dayOfYear;
+  document.getElementById('detailOcc').textContent = COUNT[e.name];
+  document.getElementById('detailCycle').textContent = 'M'+String(e.month).padStart(2,'0');
+  document.getElementById('detail').style.setProperty('--c', COLOR[e.name]);
+  document.getElementById('detailSwatch').style.background = COLOR[e.name];
+  document.getElementById('detailSwatch').style.boxShadow = '0 0 20px ' + COLOR[e.name];
+  document.getElementById('detail').classList.add('show');
+  document.getElementById('detail').style.borderColor = COLOR[e.name];
+}
+document.getElementById('detailClose').addEventListener('click', ()=>{
+  document.getElementById('detail').classList.remove('show');
+  document.querySelectorAll('.day.active').forEach(x=>x.classList.remove('active'));
+});
+
+// =================== FILTER + SEARCH ===================
+function applyFilter(q){
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  q = (q||'').trim();
+  if(!q){
+    document.body.classList.remove('has-filter');
+    document.querySelectorAll('.day').forEach(d=>d.classList.remove('match'));
+    document.querySelectorAll('.entity').forEach(d=>d.classList.remove('match'));
+    return;
+  }
+  document.body.classList.add('has-filter');
+  const qn = norm(q);
+  document.querySelectorAll('.day:not(.empty)').forEach(d=>{
+    if(norm(d.dataset.name).includes(qn)) d.classList.add('match'); else d.classList.remove('match');
+  });
+  document.querySelectorAll('.entity').forEach(d=>{
+    if(norm(d.dataset.name).includes(qn)) d.classList.add('match'); else d.classList.remove('match');
+  });
+}
+document.getElementById('searchInput').addEventListener('input', e=>applyFilter(e.target.value));
+
+// Month / quarter filter
+document.getElementById('monthFilter').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#monthFilter button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const m = b.dataset.m;
+  const ranges = {all:[1,12], q1:[1,3], q2:[4,6], q3:[7,9], q4:[10,12]};
+  const [a,z] = ranges[m];
+  document.querySelectorAll('.month').forEach(el=>{
+    const mi = +el.dataset.month;
+    el.style.display = (mi>=a && mi<=z) ? '' : 'none';
+  });
+});
+
+// =================== CLOCK ===================
+function tick(){
+  const d = new Date();
+  const z = n => String(n).padStart(2,'0');
+  document.getElementById('clock').textContent =
+    z(d.getHours())+':'+z(d.getMinutes())+':'+z(d.getSeconds());
+}
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>
